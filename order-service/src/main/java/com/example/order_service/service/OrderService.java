@@ -2,6 +2,8 @@ package com.example.order_service.service;
 
 import com.example.order_service.dto.OrderRequest;
 import com.example.order_service.dto.RevenueResponse;
+import com.example.order_service.dto.TrackOrder;
+import com.example.order_service.dto.UpdateStatusRequest;
 import com.example.order_service.enums.Status;
 import com.example.order_service.exception.OrderNotFoundException;
 import com.example.order_service.exception.UserNotFoundException;
@@ -11,7 +13,6 @@ import com.example.order_service.model.User;
 import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,11 +22,10 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
 import static com.example.order_service.mapper.OrderMapper.convertToDTO;
+
 
 
 @Service
@@ -33,13 +33,13 @@ import static com.example.order_service.mapper.OrderMapper.convertToDTO;
 public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
-    @Autowired
+
     private final OrderRepository orderRepository;
 
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
-    private MongoTemplate mongoTemplate;
+
+
+    private final MongoTemplate mongoTemplate;
 
 
     public OrderRequest createOrder(OrderRequest request, String userName) {
@@ -51,8 +51,10 @@ public class OrderService {
         order.setOrderId("ORD" + System.currentTimeMillis());
         order.setUserId(user.getId());
         order.setStatus(request.getStatus());
+        order.setCurrency(request.getCurrency());
         order.setTotalAmount(request.getTotalAmount());
         order.setCreatedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
         return convertToDTO(savedOrder);
@@ -66,29 +68,30 @@ public class OrderService {
 
     public List<OrderRequest> getOrderByUserId(String userId) {
         logger.info("Fetching Orders from UserId :" + userId);
-        List<Order> order = orderRepository.findByUserIdAndDeletedFalse(userId);
-        if (order.isEmpty()) {
+        List<Order> orders = orderRepository.findByUserIdAndDeletedFalse(userId);
+        if (orders.isEmpty()) {
             logger.warn("No Orders found for the userId { } :" + userId);
             throw new UserNotFoundException("No User found for userId :" + userId);
         } else {
-            logger.info("Number of Orders found for given UserId : " + order.size());
+            logger.info("Number of Orders found for given UserId : " + orders.size());
         }
-        return order.stream().map(OrderMapper::convertToDTO).toList();
+        return orders.stream().map(OrderMapper::convertToDTO).toList();
     }
 
     public List<OrderRequest> getOrderByStatus(Status status) {
         logger.info("Fetching Orders by Status :" + status);
-        List<Order> order = orderRepository.findByStatusAndDeletedFalse(status);
-        if (order.isEmpty()) {
+        List<Order> orders= orderRepository.findByStatusAndDeletedFalse(status);
+        if (orders.isEmpty()) {
             logger.warn("Status for given orders not found");
         }
-        return order.stream().map(OrderMapper::convertToDTO).toList();
+        return orders.stream().map(OrderMapper::convertToDTO).toList();
     }
 
     public void deleteOrder(String orderId) {
         logger.info("Deleting Order by the OrderId :" + orderId);
         Order order = orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(() -> new OrderNotFoundException("Order not found :" + orderId));
         order.setDeleted(true);
+        order.setDeletedAt(LocalDateTime.now());
         orderRepository.save(order);
 
     }
@@ -106,5 +109,23 @@ public class OrderService {
         return results.getMappedResults();
     }
 
-
+    public TrackOrder trackOrderByOrderId(String orderId){
+        Order order=orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found For OrderId :"+orderId));
+        return TrackOrder.builder()
+                .orderId(order.getOrderId())
+                .status(order.getStatus())
+                .updatedAt(order.getUpdatedAt())
+                .build();
+    }
+    public TrackOrder updateStatusByOrderId( String orderId,UpdateStatusRequest request){
+        Order order=orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found for orderId :"+orderId));
+        order.setStatus(request.getStatus());
+        order.setUpdatedAt(LocalDateTime.now());
+        Order saved=orderRepository.save(order);
+        return TrackOrder.builder()
+                .orderId(saved.getOrderId())
+                .status(saved.getStatus())
+                .updatedAt(saved.getUpdatedAt())
+                .build();
+    }
 }

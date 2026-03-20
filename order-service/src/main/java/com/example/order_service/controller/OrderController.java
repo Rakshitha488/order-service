@@ -2,6 +2,8 @@ package com.example.order_service.controller;
 
 import com.example.order_service.dto.OrderRequest;
 import com.example.order_service.dto.RevenueResponse;
+import com.example.order_service.dto.TrackOrder;
+import com.example.order_service.dto.UpdateStatusRequest;
 import com.example.order_service.enums.Status;
 import com.example.order_service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,17 @@ public class OrderController {
     @GetMapping("/revenue-by-status")
     public ResponseEntity<List<RevenueResponse>> getRevenueByStatus() {
         return ResponseEntity.ok(orderService.getRevenueByStatus());
+    }
+
+    @GetMapping("/track/{orderId}")
+    public ResponseEntity<TrackOrder> trackOrderById(@PathVariable String orderId) {
+        return ResponseEntity.ok(orderService.trackOrderByOrderId(orderId));
+    }
+
+    @PreAuthorize(("hasRole('ADMIN')"))
+    @PutMapping("/updateStatus/{orderId}")
+    public ResponseEntity<TrackOrder> updateStatusByOrderId(@PathVariable String orderId, @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(orderService.updateStatusByOrderId(orderId,request));
     }
 
 }

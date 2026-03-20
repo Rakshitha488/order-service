@@ -11,8 +11,10 @@ public class OrderMapper {
         orderdto.setOrderId(order.getOrderId());
         orderdto.setUserId(order.getUserId());
         orderdto.setStatus(order.getStatus());
+        orderdto.setCurrency(order.getCurrency());
         orderdto.setTotalAmount(order.getTotalAmount());
         orderdto.setCreatedAt(LocalDateTime.now());
+        orderdto.setUpdatedAt(LocalDateTime.now());
         return orderdto;
 
     }

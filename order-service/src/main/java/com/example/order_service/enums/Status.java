@@ -4,5 +4,6 @@ public enum Status {
     PLACED,
     SHIPPED,
     DELIVERED,
-    CANCELLED
+    CANCELLED,
+    REFUND
 }

@@ -1,6 +1,7 @@
 package com.example.order_service.model;
 
 
+import com.example.order_service.enums.Currency;
 import com.example.order_service.enums.Status;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -18,9 +19,12 @@ public class Order {
     private String orderId;
     private String userId;
     private Status status;
+    private Currency currency;
     private double totalAmount;
     private LocalDateTime createdAt;
     private boolean deleted = false;
+    private LocalDateTime UpdatedAt;
+    private LocalDateTime deletedAt;
 
 
 }
