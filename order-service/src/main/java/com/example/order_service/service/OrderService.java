@@ -22,10 +22,11 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import static com.example.order_service.mapper.OrderMapper.convertToDTO;
 
+import static com.example.order_service.mapper.OrderMapper.convertToDTO;
 
 
 @Service
@@ -47,14 +48,15 @@ public class OrderService {
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Order order = new Order();
-        order.setOrderId("ORD" + System.currentTimeMillis());
-        order.setUserId(user.getId());
-        order.setStatus(request.getStatus());
-        order.setCurrency(request.getCurrency());
-        order.setTotalAmount(request.getTotalAmount());
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
+        Order order = Order.builder()
+                .orderId("ORD" + System.currentTimeMillis())
+                .userId(user.getId())
+                .status(request.getStatus())
+                .currency(request.getCurrency())
+                .totalAmount(request.getTotalAmount())
+                .createdAt(LocalDateTime.now())
+                .UpdatedAt(LocalDateTime.now())
+                .build();
 
         Order savedOrder = orderRepository.save(order);
         return convertToDTO(savedOrder);
@@ -80,7 +82,7 @@ public class OrderService {
 
     public List<OrderRequest> getOrderByStatus(Status status) {
         logger.info("Fetching Orders by Status :" + status);
-        List<Order> orders= orderRepository.findByStatusAndDeletedFalse(status);
+        List<Order> orders = orderRepository.findByStatusAndDeletedFalse(status);
         if (orders.isEmpty()) {
             logger.warn("Status for given orders not found");
         }
@@ -109,19 +111,20 @@ public class OrderService {
         return results.getMappedResults();
     }
 
-    public TrackOrder trackOrderByOrderId(String orderId){
-        Order order=orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found For OrderId :"+orderId));
+    public TrackOrder trackOrderByOrderId(String orderId) {
+        Order order = orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(() -> new OrderNotFoundException("Order Not Found For OrderId :" + orderId));
         return TrackOrder.builder()
                 .orderId(order.getOrderId())
                 .status(order.getStatus())
                 .updatedAt(order.getUpdatedAt())
                 .build();
     }
-    public TrackOrder updateStatusByOrderId( String orderId,UpdateStatusRequest request){
-        Order order=orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found for orderId :"+orderId));
+
+    public TrackOrder updateStatusByOrderId(String orderId, UpdateStatusRequest request) {
+        Order order = orderRepository.findByOrderIdAndDeletedFalse(orderId).orElseThrow(() -> new OrderNotFoundException("Order Not Found for orderId :" + orderId));
         order.setStatus(request.getStatus());
         order.setUpdatedAt(LocalDateTime.now());
-        Order saved=orderRepository.save(order);
+        Order saved = orderRepository.save(order);
         return TrackOrder.builder()
                 .orderId(saved.getOrderId())
                 .status(saved.getStatus())

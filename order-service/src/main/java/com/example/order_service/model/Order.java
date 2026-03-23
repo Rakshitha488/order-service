@@ -3,6 +3,7 @@ package com.example.order_service.model;
 
 import com.example.order_service.enums.Currency;
 import com.example.order_service.enums.Status;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Document(collection = "orders")
 @Data
+@Builder
 public class Order {
     @Id
     private String id;

@@ -69,7 +69,7 @@ public class OrderController {
     @PreAuthorize(("hasRole('ADMIN')"))
     @PutMapping("/updateStatus/{orderId}")
     public ResponseEntity<TrackOrder> updateStatusByOrderId(@PathVariable String orderId, @RequestBody UpdateStatusRequest request) {
-        return ResponseEntity.ok(orderService.updateStatusByOrderId(orderId,request));
+        return ResponseEntity.ok(orderService.updateStatusByOrderId(orderId, request));
     }
 
 }
