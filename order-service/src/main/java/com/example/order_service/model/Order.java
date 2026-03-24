@@ -24,7 +24,7 @@ public class Order {
     private Currency currency;
     private double totalAmount;
     private LocalDateTime createdAt;
-    private boolean deleted = false;
+    private boolean deleted ;
     private LocalDateTime UpdatedAt;
     private LocalDateTime deletedAt;
 

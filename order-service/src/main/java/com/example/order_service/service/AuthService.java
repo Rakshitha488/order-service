@@ -1,8 +1,6 @@
 package com.example.order_service.service;
 
 import com.example.order_service.dto.*;
-import com.example.order_service.enums.Role;
-import com.example.order_service.exception.UserAlreadyExistException;
 import com.example.order_service.exception.UserNotFoundException;
 import com.example.order_service.repository.UserRepository;
 import com.example.order_service.security.JwtUtil;
@@ -19,39 +17,34 @@ import com.example.order_service.model.User;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
-    public String register(RegisterRequest request) {
-
-        Role role = request.getRole() == null ? Role.CUSTOMER : request.getRole();
-        User user = User.builder()
-                .userName(request.getUserName())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(role)
+    public RegisterRequest register(RegisterRequest request){
+        User user=userService.register(request);
+        return RegisterRequest.builder()
+                .userName(user.getUserName())
+                .password(user.getPassword())
+                .role(user.getRole())
                 .build();
-
-        try {
-            userRepository.save(user);
-        } catch (Exception ex) {
-            throw new UserAlreadyExistException("UserName Already exist....");
-        }
-
-        return "User Registerd Successfully " + user.getId();
-
-
     }
 
+
     public String login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUserName(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception ex) {
+            throw new UserNotFoundException("Invalid credentials ");
+        }
+
         User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new UserNotFoundException("User not found "));
-
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUserName(),
-                        request.getPassword()
-                )
-        );
 
 
         return jwtUtil.generateTokens(user);

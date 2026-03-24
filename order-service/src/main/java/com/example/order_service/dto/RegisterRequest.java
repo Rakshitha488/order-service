@@ -1,8 +1,9 @@
 package com.example.order_service.dto;
 
 import com.example.order_service.enums.Role;
+import lombok.Builder;
 import lombok.Data;
-
+@Builder
 @Data
 public class RegisterRequest {
     private String userName;

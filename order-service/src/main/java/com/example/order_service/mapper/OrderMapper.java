@@ -7,15 +7,17 @@ import java.time.LocalDateTime;
 
 public class OrderMapper {
     public static OrderRequest convertToDTO(Order order) {
-        OrderRequest orderdto = new OrderRequest();
-        orderdto.setOrderId(order.getOrderId());
-        orderdto.setUserId(order.getUserId());
-        orderdto.setStatus(order.getStatus());
-        orderdto.setCurrency(order.getCurrency());
-        orderdto.setTotalAmount(order.getTotalAmount());
-        orderdto.setCreatedAt(LocalDateTime.now());
-        orderdto.setUpdatedAt(LocalDateTime.now());
-        return orderdto;
+
+                return OrderRequest.builder()
+                .orderId(order.getOrderId())
+                .userId(order.getUserId())
+                .status(order.getStatus())
+                .currency(order.getCurrency())
+                .totalAmount(order.getTotalAmount())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .build();
+
 
     }
 }
